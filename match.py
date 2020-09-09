@@ -2,53 +2,64 @@
 Generate mapping file needed to upload photos to PowerSchool.
 """
 
+import argparse
+import logging
 from fuzzywuzzy import fuzz
 import os.path
+import sys
 
 
-def load_names():
-    """ Return list of (name, student_number) tuples based on data from PowerSchool. """
-    result = []
-    with open("../data/names_numbers.txt") as f:
-        for line in f:
-            (first, last, sn) = line.strip().split("\t")
-            combined_name = first + "_" + last
-            result.append((combined_name, sn))
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("match")
 
-    return result
 
-def load_filenames():
-    """ Return list of all the image filenames. """
-    result = []
-    with open("../data/filenames.txt") as f:
-        for line in f:
-            result.append(line.strip())
-    return result
-
-def rootname(filename):
-    """ Map filename to its base without extension.
-    E.g. rootname("foo.png") -> "foo"
-
-    """
-    return os.path.splitext(filename)[0]
+def load_names(f):
+    """ Return list of (name, value) tuples. """
+    return [line.strip() for line in f]
 
 def match(names, name):
     """ Return the best match of `name` from the list of `names` """
     #print(f"match({name})")
-    scores = [(fuzz.ratio(name, n[0]), n) for n in names]
-    #print(f"scores = {scores}")
-    best = sorted(scores, key=lambda t: t[0], reverse=True)[0]
 
-    return best
+    best_score = 0
+    best_name = ""
+    for n in names:
+        score = fuzz.ratio(name, n)
+        #logger.debug(f"score of {name} against {n} is {score}")
 
+        if score > best_score:
+            best_score = score
+            best_name = n
+
+        if score == 100:
+            break
+
+    return (best_name, best_score)
+
+def main():
+    parser = argparse.ArgumentParser(description="Find best fuzzy matches")
+    parser.add_argument("matchfile", help="file with values to match")
+    parser.add_argument("-d", "--debug", action="store_true", help="log debug messages")
+    args = parser.parse_args()
+    logger.debug(f"args = {args}")
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.WARN)
+
+    with open(args.matchfile) as f:
+        names = load_names(f)
+
+    infile = sys.stdin
+    for line in infile:
+        name_to_match = line.strip()
+        (best, score) = match(names, name_to_match)
+        logger.debug(f"{name_to_match} -> {best}  {score}")
+        if score < 90:
+            logger.warning(f"low score: {name_to_match} -> {best}  {score}")
+
+        print(f"{name_to_match}\t{best}")
 
 if __name__ == "__main__":
-    names = load_names()
-
-    filenames = load_filenames()
-
-    for filename in filenames:
-        root = rootname(filename)
-        matched = match(names, root)
-
-        print(f"{filename} -> {matched}")
+    main()
