@@ -17,15 +17,16 @@ def load_names(f):
     """ Return list of (name, value) tuples. """
     return [line.strip() for line in f]
 
+
 def match(names, name):
     """ Return the best match of `name` from the list of `names` """
-    #print(f"match({name})")
+    # print(f"match({name})")
 
     best_score = 0
     best_name = ""
     for n in names:
         score = fuzz.ratio(name, n)
-        #logger.debug(f"score of {name} against {n} is {score}")
+        # logger.debug(f"score of {name} against {n} is {score}")
 
         if score > best_score:
             best_score = score
@@ -35,6 +36,7 @@ def match(names, name):
             break
 
     return (best_name, best_score)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Find best fuzzy matches")
@@ -60,6 +62,7 @@ def main():
             logger.warning(f"low score: {name_to_match} -> {best}  {score}")
 
         print(f"{name_to_match}\t{best}")
+
 
 if __name__ == "__main__":
     main()
