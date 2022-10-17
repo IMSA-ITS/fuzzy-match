@@ -29,12 +29,12 @@ logger = logging.getLogger("match")
 
 
 def load_names(f):
-    """ Read tab-separated data and return its content as list of lists. """
+    """Read tab-separated data and return its content as list of lists."""
     return [line.strip().split("\t") for line in f]
 
 
 def match(names, name):
-    """ Return the best match of `name` from the list of `names` """
+    """Return the best match of `name` from the list of `names`"""
     # print(f"match({name})")
 
     best_score = 0
