@@ -60,8 +60,13 @@ def main():
     parser.add_argument("matchfile", help="file with values to match")
     parser.add_argument("-d", "--debug", action="store_true", help="log debug messages")
     default_minimum = 80
-    parser.add_argument("-m", "--minimum", type=int, default=default_minimum,
-                        help=f"minimum fuzzy score (default: {default_minimum})")
+    parser.add_argument(
+        "-m",
+        "--minimum",
+        type=int,
+        default=default_minimum,
+        help=f"minimum fuzzy score (default: {default_minimum})",
+    )
     args = parser.parse_args()
 
     if args.debug:
